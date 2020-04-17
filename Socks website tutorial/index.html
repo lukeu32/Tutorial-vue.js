@@ -12,11 +12,21 @@
 	<div id="app">
 		<div class="product">
 		<div class="produce-image">
-			<img v-bind:src="image"  v-bind:alt="altText"/> <!--  v-bind Dynamically binds an attribute to an expression. Syntax is v-bind: or : for short.-->
+			<img v-bind:src="image" />
+			
 		</div>
 		
 		<div class="product-info">
 			<h1>{{ product + '?'}}</h1>
+			<p v-show="inStock">In Stock</p> <!--V-show only toggles visibility, it does not insert or remove the element from the DOM. -->
+			<!--
+			<p v-if="inventory > 10">In Stock</p>
+			<p v-else-if="inventory<=10 && inventory > 0">Almost sold out!</p>
+			<p v-else>Out of Stack</p> 
+			-->
+			<!--We can use the v-if and v-else directives to determine which element to render. -->
+			<p v-else>Out of Stock</p>
+			<span v-if="onSale">On Sale!</span>
 		</div>
 		
 		
