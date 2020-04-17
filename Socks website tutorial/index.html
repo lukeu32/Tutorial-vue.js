@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale" />
+<title>Product App</title>
+</head>
+<body>
+
+	<div id="app">
+		<h1>{{ product + ' what thats mean ?' }}</h1> <!--Jeśli chcemy, abyśmy productpojawili się w naszym h1, możemy umieścić product w tych podwójnych nawiasach klamrowych.-->
+		<h1>I love my {{ product + '?'}}</h1>
+		<h1>{{ product + '?'}}</h1>
+		<!-- inne opcje 
+		
+		<h1>{{ firstName + ' ' + lastName }}</h1>
+		<h2>{{ message.split('').reverse().join('') }}
+		
+		-->
+		
+	</div>
+	
+	<!-- production version, optimized for size and speed -->
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<script src="main.js"></script>
+</body>
+</html>
+
+<!-- Powodem, dla którego Vue może natychmiast wyświetlić productwartość, jest to, że Vue jest reaktywny . Innymi słowy, dane instancji są powiązane z każdym miejscem, do którego dane się odwołują. Dlatego Vue może nie tylko wyświetlać swoje dane w kodzie HTML, który się do niego odwołuje, ale ten HTML będzie aktualizowany, aby wyświetlał nowe wartości za każdym razem, gdy odwołuje się do danych.
+
+Aby to udowodnić, otwórzmy konsolę i zmień wartość naszego łańcucha produktów. Zobacz co się stanie. -->
