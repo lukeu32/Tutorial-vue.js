@@ -1,3 +1,6 @@
+var eventBus = new Vue() //A common solution for communicating from a grandchild up to a grandparent, or for communicating between components, is to use what’s called a global event bus.
+//This is essentially a channel through which you can send information amongst your components, and it’s just a Vue instance, without any options passed into it.
+
 Vue.component('product', {
     props: {
       premium: {
@@ -16,11 +19,8 @@ Vue.component('product', {
             <h1>{{ product }}</h1>
             <p v-if="inStock">In Stock</p>
             <p v-else>Out of Stock</p>
-            <p>Shipping: {{ shipping }}</p>
   
-            <ul>
-              <li v-for="detail in details">{{ detail }}</li>
-            </ul>
+            <info-tabs :shipping="shipping" :details="details"></info-tabs>
   
             <div class="color-box"
                  v-for="(variant, index) in variants" 
@@ -39,18 +39,7 @@ Vue.component('product', {
   
          </div> 
 
-          <div>
-              <p v-if="!reviews.length">There are no reviews yet.</p>
-              <ul v-else>
-                  <li v-for="(review, index) in reviews" :key="index">
-                    <p>{{ review.name }}</p>
-                    <p>Rating:{{ review.rating }}</p>
-                    <p>{{ review.review }}</p>
-                  </li>
-              </ul>
-          </div>
-         
-         <product-review @review-submitted="addReview"></product-review>
+         <product-tabs :reviews="reviews"></product-tabs> //And pass in reviews on our product-tabs component itself, so it is always receiving the latest reviews.
       
       </div>
      `,
@@ -83,10 +72,7 @@ Vue.component('product', {
         },
         updateProduct(index) {  
             this.selectedVariant = index
-        },
-        addReview(productReview) {
-          this.reviews.push(productReview)
-        } //This function takes in the productReview object emitted from our onSubmit method, then pushes that object into the reviews array on our product component’s data. We don’t yet have reviews on our product’s data
+        }
       },
       computed: {
           title() {
@@ -104,93 +90,171 @@ Vue.component('product', {
             }
               return 2.99
           }
+      },
+	  
+	  //What’s mounted? That’s a lifecycle hook, which is a function that is called once the component has mounted to the DOM. Now, once product has mounted, it will be listening for the review-submitted event. And once it hears it, it’ll add the new productReview to its data.
+      mounted() {
+        eventBus.$on('review-submitted', productReview => {
+          this.reviews.push(productReview)
+        }) //when the eventBus emits the review-submitted event, take its payload (the productReview) and push it into product's reviews array. This is very similar to what we were doing before with our addReview method
       }
   })
 
 
   Vue.component('product-review', {
     template: `
-      <form class="review-form" @submit.prevent="onSubmit">
-      
-        <p class="error" v-if="errors.length">
-          <b>Please correct the following error(s):</b>
-          <ul>
-            <li v-for="error in errors">{{ error }}</li>
-          </ul>
-        </p>
+    <form class="review-form" @submit.prevent="onSubmit">
 
-        <p>
-          <label for="name">Name:</label>
-          <input id="name" v-model="name"> 
-        </p>
-        
-        <p>
-          <label for="review">Review:</label>      
-          <textarea id="review" v-model="review"></textarea>
-        </p>
-        
-        <p>
-          <label for="rating">Rating:</label>
-          <select id="rating" v-model.number="rating">
-            <option>5</option>
-            <option>4</option>
-            <option>3</option>
-            <option>2</option>
-            <option>1</option>
-          </select>
-        </p>
+      <p>
+        <label for="name">Name:</label>
+        <input id="name" v-model="name">
+      </p>
 
-        <p>Would you recommend this product?</p>
-        <label>
-          Yes
-          <input type="radio" value="Yes" v-model="recommend"/>
-        </label>
-        <label>
-          No
-          <input type="radio" value="No" v-model="recommend"/>
-        </label>
-            
-        <p>
-          <input type="submit" value="Submit">  
-        </p>    
-      
+      <p>
+        <label for="review">Review:</label>      
+        <textarea id="review" v-model="review"></textarea>
+      </p>
+
+      <p>
+        <label for="rating">Rating:</label>
+        <select id="rating" v-model.number="rating">
+          <option>5</option>
+          <option>4</option>
+          <option>3</option>
+          <option>2</option>
+          <option>1</option>
+        </select>
+      </p>
+
+      <p>
+        <input type="submit" value="Submit">  
+      </p>    
+  
     </form>
-    `, //Vue’s v-model directive gives us this two-way binding. That way, whenever something new is entered into the input, the data changes. And whenever the data changes, anywhere using that data will update.
-	//Note on the select we’ve used the .number modifier (more on this below). This ensures that the data will be converted into an integer versus a string.
-	//<input required> This will provide an automatic error message when the user tries to submit the form if that field is not filled in.
+    `,
     data() {
       return {
         name: null,
         review: null,
         rating: null,
-        recommend: null,
         errors: []
       }
     },
     methods: {
       onSubmit() {
         this.errors = []
-        if(this.name && this.review && this.rating && this.recommend) {
+        if (this.name && this.review && this.rating) {
           let productReview = {
             name: this.name,
             review: this.review,
-            rating: this.rating,
-            recommend: this.recommend
+            rating: this.rating
           }
-          this.$emit('review-submitted', productReview)
+          eventBus.$emit('review-submitted', productReview)
           this.name = null
           this.review = null
           this.rating = null
-          this.recommend = null
-        } else {
+        }
+        else {
           if(!this.name) this.errors.push("Name required.")
           if(!this.review) this.errors.push("Review required.")
           if(!this.rating) this.errors.push("Rating required.")
-          if(!this.recommend) this.errors.push("Recommendation required.") //This translates to: if our name data is empty, push “Name required.” into our errors array. The same goes for our review and rating data. If either are empty, an error string will be pushed into our errors array.
         }
       }
     }
   })
+
+  Vue.component('product-tabs', {
+    props: { //But since reviews lives on our product component, we’ll need to send that data into our product-tabs component via props.
+      reviews: {
+        type: Array, 
+        required: false
+      }
+    },
+    template: `
+      <div>
+      
+        <ul>
+          <span class="tabs" 
+                :class="{ activeTab: selectedTab === tab }"
+                v-for="(tab, index) in tabs"
+                @click="selectedTab = tab" //add selectedTab and dynamically set that value with an event handler, setting it equal to the tab that was just clicked
+                :key="tab"
+          >{{ tab }}</span>
+        </ul>
+
+        <div v-show="selectedTab === 'Reviews'"> // displays when "Reviews" is clicked
+            <p v-if="!reviews.length">There are no reviews yet.</p>
+            <ul v-else>
+                <li v-for="(review, index) in reviews" :key="index">
+                  <p>{{ review.name }}</p>
+                  <p>Rating:{{ review.rating }}</p>
+                  <p>{{ review.review }}</p>
+                </li>
+            </ul>
+        </div>
+
+        <div v-show="selectedTab === 'Make a Review'"> // displays when "Make a Review" is clicked
+          <product-review></product-review>
+        </div>
+    
+      </div>
+    `,
+    data() {
+      return {
+        tabs: ['Reviews', 'Make a Review'],
+        selectedTab: 'Reviews' // set from @click
+      }
+    }
+  })
+
+Vue.component('info-tabs', {
+    props: {
+      shipping: {
+        required: true
+      },
+      details: {
+        type: Array,
+        required: true
+      }
+    },
+    template: `
+      <div>
+      
+        <ul>
+          <span class="tabs" 
+                :class="{ activeTab: selectedTab === tab }" 
+				//This translates to: apply our activeTab class whenever it is true that selectedTab is equal to tab. Because selectedTab is always equal to whichever tab was just clicked, then this class will be applied to the tab the user clicked on.
+				//In other words, when the first tab is clicked, selectedTab will be “Reviews” and the tab will be “Reviews”. So the activeTab class will be applied since they are equivalent.
+				
+				
+                v-for="(tab, index) in tabs"
+                @click="selectedTab = tab"
+                :key="tab"
+          >{{ tab }}</span>
+        </ul>
+
+        <div v-show="selectedTab === 'Shipping'">
+          <p>{{ shipping }}</p>
+        </div>
+
+        <div v-show="selectedTab === 'Details'">
+          <ul>
+            <li v-for="detail in details">{{ detail }}</li>
+          </ul>
+        </div>
+    
+      </div>
+    `,
+    data() {
+      return {
+        tabs: ['Shipping', 'Details'],
+        selectedTab: 'Shipping'
+      }
+    }
+  })
+
+
+
   
   var app = new Vue({
       el: '#app',
