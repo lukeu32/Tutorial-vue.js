@@ -10,47 +10,11 @@
 <div class="nav-bar"></div>
 
 <div id="app">
-  
-  <div class="product">
-        
-    <div class="product-image">
-      <img :src="image" />
-    </div>
-
-    <div class="product-info">
-      <h1>{{ title }}</h1>
-      <p v-if="inStock">In Stock</p>
-      <p v-else>Out of Stock</p>
-      <p>{{ sale }}</p>
-
-      <ul>
-        <li v-for="detail in details">{{ detail }}</li>
-      </ul>
-
-
-        <div class="color-box"
-             v-for="(variant, index) in variants" 
-             :key="variant.variantId"
-             :style="{ backgroundColor: variant.variantColor }"
-             @mouseover="updateProduct(index)" > <!--Now instead of passing in the variantImage, we’ll pass in the index. -->
-        </div> 
-
-        <button v-on:click="addToCart" 
-          :disabled="!inStock"
-          :class="{ disabledButton: !inStock }"
-          >
-        Add to cart
-        </button>
-
-        <div class="cart">
-          <p>Cart({{ cart }})</p>
-        </div>
-
-      </div>  
-    
-  </div>
-  
+	<product :premium="premium"></prdouct>
 </div> 
+<!-- We’ve given our product component a prop, or a custom attribute, called premium. We are binding that custom attribute : to the premium that lives in our instance’s data.
+
+Now our root instance can pass premium into its child product component. Since the attribute is bound to premium in our root instance’s data, the current value of premium in our instance’s data will always be sent to product. -->
 	
 	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 	<script src="main.js"></script>
@@ -60,7 +24,12 @@
 </html>
 
 <!-- 
--Data can be bound to an element’s style attribute
--Data can be bound to an element’s class
--We can use expressions inside an element’s class binding to evaluate whether a class should appear or not
+-Components are blocks of code, grouped together within a custom element
+-Components make applications more manageable by breaking up the whole into reusuable parts that have their own structure and behavior
+-Data on a component must be a function
+-Props are used to pass data from parent to child
+-We can specify requirements for the props a component is receiving
+-Props are fed into a component through a custom attribute
+-Props can be dynamically bound to the parent’s data
+-Vue dev tools provide helpful insight about your components
  -->
