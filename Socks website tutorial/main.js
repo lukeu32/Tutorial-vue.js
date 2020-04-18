@@ -1,68 +1,60 @@
-Vue.component('product-details', {
-  props: {
-    details: {
-      type: Array,
-      required: true
-    }
-  },
-  template: `
-    <ul>
-      <li v-for="detail in details">{{ detail }}</li>
-    </ul>
-  `
-})
-
-Vue.component('product', { //The first argument is the name we choose for the component, and the second is an options object, similar to how we created our initial Vue instance.
-	
-	props: { //Props are essentially variables that are waiting to be filled with the data its parent sends down into it. 
-		premium: {
-			type: Boolean,
-			required: true
-		}
-	},// We are specifying what props the product component is expecting to receive by adding a props object to our component.
-	
-      template: `
-       <div class="product">
-
-          <div class="product-image">
-            <img :src="image" />
-          </div>
-
-          <div class="product-info">
-              <h1>{{ product }}</h1>
-              <p v-if="inStock">In Stock</p>
-              <p v-else>Out of Stock</p>
-              <p>Shipping: {{ shipping }}</p>
-
-              <ul>
-                <li v-for="detail in details">{{ detail }}</li>
-              </ul>
-
-              <div class="color-box"
-                   v-for="(variant, index) in variants" 
-                   :key="variant.variantId"
-                   :style="{ backgroundColor: variant.variantColor }"
-                   @mouseover="updateProduct(index)"
-                   >
-              </div> 
-
-              <button v-on:click="addToCart" 
-                :disabled="!inStock"
-                :class="{ disabledButton: !inStock }"
-                >
-              Add to cart
-              </button>
-
-              <button @click="removeFromCart" 
-                >
-              Remove from cart
-              </button>
-
-           </div>  
-
+Vue.component('product', {
+    props: {
+      premium: {
+        type: Boolean,
+        required: true
+      }
+    },
+    template: `
+     <div class="product">
+          
+        <div class="product-image">
+          <img :src="image" />
         </div>
-       `,
-	   data() { //Since data is now a function that returns a data object, each component will definitely have its own data. If data weren’t a function, each product component would be sharing the same data everywhere it was used, defeating the purpose of it being a reusable component.
+  
+        <div class="product-info">
+            <h1>{{ product }}</h1>
+            <p v-if="inStock">In Stock</p>
+            <p v-else>Out of Stock</p>
+            <p>Shipping: {{ shipping }}</p>
+  
+            <ul>
+              <li v-for="detail in details">{{ detail }}</li>
+            </ul>
+  
+            <div class="color-box"
+                 v-for="(variant, index) in variants" 
+                 :key="variant.variantId"
+                 :style="{ backgroundColor: variant.variantColor }"
+                 @mouseover="updateProduct(index)"
+                 >
+            </div> 
+  
+            <button v-on:click="addToCart" 
+              :disabled="!inStock"
+              :class="{ disabledButton: !inStock }"
+              >
+            Add to cart
+            </button>
+  
+         </div> 
+
+          <div>
+              <p v-if="!reviews.length">There are no reviews yet.</p>
+              <ul v-else>
+                  <li v-for="(review, index) in reviews" :key="index">
+                    <p>{{ review.name }}</p>
+                    <p>Rating:{{ review.rating }}</p>
+                    <p>{{ review.review }}</p>
+                  </li>
+              </ul>
+          </div>
+         
+         <product-review @review-submitted="addReview"></product-review>
+      
+      </div>
+     `,
+    data() {
       return {
           product: 'Socks',
           brand: 'Vue Mastery',
@@ -81,19 +73,20 @@ Vue.component('product', { //The first argument is the name we choose for the co
               variantImage: 'https://www.vuemastery.com/images/challenges/vmSocks-blue-onWhite.jpg',
               variantQuantity: 0     
             }
-          ]
+          ],
+          reviews: []
       }
     },
       methods: {
-        addToCart: function() {
-            this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId) //Now, along with the announcement that the click event occurred, the id of the product that was just added to the cart is sent as well.
+        addToCart() {
+            this.$emit('add-to-cart', this.variants[this.selectedVariant].variantId)
         },
-        updateProduct: function(index) {  
+        updateProduct(index) {  
             this.selectedVariant = index
         },
-        removeFromCart: function() {
-             this.$emit('remove-from-cart', this.variants[this.selectedVariant].variantId)
-        }
+        addReview(productReview) {
+          this.reviews.push(productReview)
+        } //This function takes in the productReview object emitted from our onSubmit method, then pushes that object into the reviews array on our product component’s data. We don’t yet have reviews on our product’s data
       },
       computed: {
           title() {
@@ -113,35 +106,101 @@ Vue.component('product', { //The first argument is the name we choose for the co
           }
       }
   })
+
+
+  Vue.component('product-review', {
+    template: `
+      <form class="review-form" @submit.prevent="onSubmit">
+      
+        <p class="error" v-if="errors.length">
+          <b>Please correct the following error(s):</b>
+          <ul>
+            <li v-for="error in errors">{{ error }}</li>
+          </ul>
+        </p>
+
+        <p>
+          <label for="name">Name:</label>
+          <input id="name" v-model="name"> 
+        </p>
+        
+        <p>
+          <label for="review">Review:</label>      
+          <textarea id="review" v-model="review"></textarea>
+        </p>
+        
+        <p>
+          <label for="rating">Rating:</label>
+          <select id="rating" v-model.number="rating">
+            <option>5</option>
+            <option>4</option>
+            <option>3</option>
+            <option>2</option>
+            <option>1</option>
+          </select>
+        </p>
+
+        <p>Would you recommend this product?</p>
+        <label>
+          Yes
+          <input type="radio" value="Yes" v-model="recommend"/>
+        </label>
+        <label>
+          No
+          <input type="radio" value="No" v-model="recommend"/>
+        </label>
+            
+        <p>
+          <input type="submit" value="Submit">  
+        </p>    
+      
+    </form>
+    `, //Vue’s v-model directive gives us this two-way binding. That way, whenever something new is entered into the input, the data changes. And whenever the data changes, anywhere using that data will update.
+	//Note on the select we’ve used the .number modifier (more on this below). This ensures that the data will be converted into an integer versus a string.
+	//<input required> This will provide an automatic error message when the user tries to submit the form if that field is not filled in.
+    data() {
+      return {
+        name: null,
+        review: null,
+        rating: null,
+        recommend: null,
+        errors: []
+      }
+    },
+    methods: {
+      onSubmit() {
+        this.errors = []
+        if(this.name && this.review && this.rating && this.recommend) {
+          let productReview = {
+            name: this.name,
+            review: this.review,
+            rating: this.rating,
+            recommend: this.recommend
+          }
+          this.$emit('review-submitted', productReview)
+          this.name = null
+          this.review = null
+          this.rating = null
+          this.recommend = null
+        } else {
+          if(!this.name) this.errors.push("Name required.")
+          if(!this.review) this.errors.push("Review required.")
+          if(!this.rating) this.errors.push("Rating required.")
+          if(!this.recommend) this.errors.push("Recommendation required.") //This translates to: if our name data is empty, push “Name required.” into our errors array. The same goes for our review and rating data. If either are empty, an error string will be pushed into our errors array.
+        }
+      }
+    }
+  })
   
   var app = new Vue({
       el: '#app',
       data: {
         premium: true,
-        cart: [] //Instead of just incrementing the number of cart, we can now make cart an array
+        cart: []
       },
       methods: {
         updateCart(id) {
           this.cart.push(id)
-        },
-        removeItem(id) {
-          for(var i = this.cart.length - 1; i >= 0; i--) {
-            if (this.cart[i] === id) {
-               this.cart.splice(i, 1);
-            }
-          }
         }
       }
   })
-	   
-	   
-	   
-	   
-	   
-	   
-	   
-	   
-	   
-	   
-	   
-	

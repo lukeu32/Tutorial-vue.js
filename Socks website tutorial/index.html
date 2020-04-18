@@ -10,12 +10,11 @@
 <div class="nav-bar"></div>
 
 <div id="app">
-		<div class="cart">
-          <p>Cart({{ cart.length }})</p> <!-- Now we’re just displaying the length of the array, or in other words: the number of products in the cart. -->
-        </div>
-	<product :premium="premium" @add-to-cart="updateCart" @remove-from-cart="removeItem"></prdouct>
+  <div class="cart">
+    <p>Cart({{ cart.length }})</p>
+  </div>
+  <product :premium="premium" @add-to-cart="updateCart"></product>
 </div> 
-<!-- Here we are using @add-to-cart in a similar way as we are using :premium. Whereas :premium is a funnel on product that data can be passed down into, @add-to-cart is essentially a radio that can receive the event emission from when the “Add to Cart” button was clicked. Since this radio is on product, which is nested within our root instance, the radio can blast the announcement that a click happened, which will trigger the updateCart method, which lives on the root instance. -->
 	
 	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 	<script src="main.js"></script>
@@ -25,8 +24,8 @@
 </html>
 
 <!-- 
--A component can let its parent know that an event has happened with $emit
--A component can use an event handler with the v-on directive ( @ for short) to listen for an event emission, which can trigger a method on the parent
--A component can $emit data along with the announcement that an event has occurred
--A parent can use data emitted from its child
+-We can use the v-model directive to create two-way binding on form elements
+-We can use the .number modifier to tell Vue to cast that value as a number, but there is a bug with it
+-We can use the .prevent event modifier to stop the page from reloading when the form is submitted
+-We can use Vue to do fairly simple custom form validation
  -->
