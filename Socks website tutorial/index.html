@@ -19,20 +19,32 @@
 		<div class="product-info">
 			<h1>{{ product + '?'}}</h1>
 			<p v-if="inStock">In Stock</p>
-			<p v-else>Out of Stock</p>
+			<p v-else :class="{outOfStock: !inStock}">Out of Stock</p>
 			
 			<ul>
 				<li v-for="detail in details">{{ detail }}</li>
 			</ul> 
 			
-			<div v-for="variant in variants" :key="variant.variantId">
-			<p @mouseover="updateProduct(variant.variantImage)">{{ variant.variantColor }}</p> <!-- We’ll use the v-on directive again, but this time we’ll use its shorthand @ and listen for a mouseover event. Notice that we’re passing variant.variantImage in as an argument to our updateProduct method. -->
+			<div class="color-box" v-for="variant in variants" :key="variant.variantId" :style="{backgroundColor: variant.variantColor}" @mouseover="updateProduct(variant.variantImage)" >
 			</div>
+			<!-- First, let’s add a class of color-box to our div, which gives it a width, height and margin. Since we’re still printing out “green” and “blue” onto the page, we can make use of those variant color strings and bind them to our style attribute. 
 			
-			<button v-on:click="addToCart">Add to Card</button>
-			<!-- Rather than using the expression cart += 1, let’s make the click trigger a method that increments the value of cart -->
-			<button @click="removeFromCart">Remove from cart</button>
+			We are using an inline style to dynamically set the background-color of our divs, based on our variant colors ( variant.variantColor ).
+
+			Now that our divs are being styled by the variantColor, we no longer need to print them out. So we can delete the p tag and move its @mouseover into the div itself.
+			-->
 			
+			<button v-on:click="addToCart" 
+				:disabled="!inStock"
+				:class="{ disabledButton: !inStock }"
+			>Add to cart</button>
+			<!-- We can use attribute binding to add the disabled attribute whenever inStock is false, or rather not true: !inStock.
+			
+			We’re using the v-bind directive’s shorthand : to bind to our button’s class. Inside the brackets we’re determining the presence of the disabled-button class by the truthiness of the data property inStock.
+
+			In other words, when our product is not in stock ( !inStock ), the disabledButton class is added. Since the disabled-button class applies a gray background-color, the button turns gray.
+			
+			-->
 			<div class="cart">
 				<p>Cart({{cart}})</p>
 			</div>
@@ -48,13 +60,7 @@
 </html>
 
 <!-- 
--The v-on directive is used to allow elements to listen for events
--The shorthand for v-on is @
--You can specify the type of event to listen for:
-  click
-  mouseover
-  any other DOM event
--The v-on directive can trigger a method
--Triggered methods can take in arguments
-- this. refers to the current Vue instance’s data as well as other methods declared inside the instance
+-Data can be bound to an element’s style attribute
+-Data can be bound to an element’s class
+-We can use expressions inside an element’s class binding to evaluate whether a class should appear or not
  -->
