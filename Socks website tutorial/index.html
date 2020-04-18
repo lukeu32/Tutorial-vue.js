@@ -7,55 +7,55 @@
 </head>
 <body>
 
-	<div class="nav-bar"></div>
-	
-	<div id="app">
-		<div class="product">
-		<div class="produce-image">
-			<img v-bind:src="image" />
-			
-		</div>
-		
-		<div class="product-info">
-			<h1>{{ product + '?'}}</h1>
-			<p v-if="inStock">In Stock</p>
-			<p v-else :class="{outOfStock: !inStock}">Out of Stock</p>
-			
-			<ul>
-				<li v-for="detail in details">{{ detail }}</li>
-			</ul> 
-			
-			<div class="color-box" v-for="variant in variants" :key="variant.variantId" :style="{backgroundColor: variant.variantColor}" @mouseover="updateProduct(variant.variantImage)" >
-			</div>
-			<!-- First, let’s add a class of color-box to our div, which gives it a width, height and margin. Since we’re still printing out “green” and “blue” onto the page, we can make use of those variant color strings and bind them to our style attribute. 
-			
-			We are using an inline style to dynamically set the background-color of our divs, based on our variant colors ( variant.variantColor ).
+<div class="nav-bar"></div>
 
-			Now that our divs are being styled by the variantColor, we no longer need to print them out. So we can delete the p tag and move its @mouseover into the div itself.
-			-->
-			
-			<button v-on:click="addToCart" 
-				:disabled="!inStock"
-				:class="{ disabledButton: !inStock }"
-			>Add to cart</button>
-			<!-- We can use attribute binding to add the disabled attribute whenever inStock is false, or rather not true: !inStock.
-			
-			We’re using the v-bind directive’s shorthand : to bind to our button’s class. Inside the brackets we’re determining the presence of the disabled-button class by the truthiness of the data property inStock.
+<div id="app">
+  
+  <div class="product">
+        
+    <div class="product-image">
+      <img :src="image" />
+    </div>
 
-			In other words, when our product is not in stock ( !inStock ), the disabledButton class is added. Since the disabled-button class applies a gray background-color, the button turns gray.
-			
-			-->
-			<div class="cart">
-				<p>Cart({{cart}})</p>
-			</div>
-			
-		</div>
-		
-		</div>
-	</div>
+    <div class="product-info">
+      <h1>{{ title }}</h1>
+      <p v-if="inStock">In Stock</p>
+      <p v-else>Out of Stock</p>
+      <p>{{ sale }}</p>
+
+      <ul>
+        <li v-for="detail in details">{{ detail }}</li>
+      </ul>
+
+
+        <div class="color-box"
+             v-for="(variant, index) in variants" 
+             :key="variant.variantId"
+             :style="{ backgroundColor: variant.variantColor }"
+             @mouseover="updateProduct(index)" > <!--Now instead of passing in the variantImage, we’ll pass in the index. -->
+        </div> 
+
+        <button v-on:click="addToCart" 
+          :disabled="!inStock"
+          :class="{ disabledButton: !inStock }"
+          >
+        Add to cart
+        </button>
+
+        <div class="cart">
+          <p>Cart({{ cart }})</p>
+        </div>
+
+      </div>  
+    
+  </div>
+  
+</div> 
 	
 	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 	<script src="main.js"></script>
+
+
 </body>
 </html>
 
