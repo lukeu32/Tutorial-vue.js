@@ -10,11 +10,12 @@
 <div class="nav-bar"></div>
 
 <div id="app">
-	<product :premium="premium"></prdouct>
+		<div class="cart">
+          <p>Cart({{ cart.length }})</p> <!-- Now we’re just displaying the length of the array, or in other words: the number of products in the cart. -->
+        </div>
+	<product :premium="premium" @add-to-cart="updateCart" @remove-from-cart="removeItem"></prdouct>
 </div> 
-<!-- We’ve given our product component a prop, or a custom attribute, called premium. We are binding that custom attribute : to the premium that lives in our instance’s data.
-
-Now our root instance can pass premium into its child product component. Since the attribute is bound to premium in our root instance’s data, the current value of premium in our instance’s data will always be sent to product. -->
+<!-- Here we are using @add-to-cart in a similar way as we are using :premium. Whereas :premium is a funnel on product that data can be passed down into, @add-to-cart is essentially a radio that can receive the event emission from when the “Add to Cart” button was clicked. Since this radio is on product, which is nested within our root instance, the radio can blast the announcement that a click happened, which will trigger the updateCart method, which lives on the root instance. -->
 	
 	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
 	<script src="main.js"></script>
@@ -24,12 +25,8 @@ Now our root instance can pass premium into its child product component. Since t
 </html>
 
 <!-- 
--Components are blocks of code, grouped together within a custom element
--Components make applications more manageable by breaking up the whole into reusuable parts that have their own structure and behavior
--Data on a component must be a function
--Props are used to pass data from parent to child
--We can specify requirements for the props a component is receiving
--Props are fed into a component through a custom attribute
--Props can be dynamically bound to the parent’s data
--Vue dev tools provide helpful insight about your components
+-A component can let its parent know that an event has happened with $emit
+-A component can use an event handler with the v-on directive ( @ for short) to listen for an event emission, which can trigger a method on the parent
+-A component can $emit data along with the announcement that an event has occurred
+-A parent can use data emitted from its child
  -->
